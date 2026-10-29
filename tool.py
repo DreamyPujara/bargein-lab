@@ -14,7 +14,7 @@ import math
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Sequence, Tuple
+from typing import Any, Dict, List, Sequence, Tuple
 
 VALID_TYPES = {"agent_start", "agent_stop", "user_start", "user_stop"}
 
@@ -29,6 +29,16 @@ class Interruption:
         if self.agent_stop_ms is None:
             return None
         return self.agent_stop_ms - self.user_start_ms
+
+
+def _is_plain_int(value: Any) -> bool:
+    """Return True for JSON integer timestamps, but not booleans.
+
+    In Python, bool is a subclass of int. JSON `true`/`false` should not be
+    accepted as millisecond timestamps because that is surprising for CLI users
+    and makes input mistakes look valid.
+    """
+    return isinstance(value, int) and not isinstance(value, bool)
 
 
 def load_events(path: str | Path) -> List[Dict[str, Any]]:
@@ -57,7 +67,7 @@ def load_events(path: str | Path) -> List[Dict[str, Any]]:
             raise ValueError(f"event {i} must contain time_ms and type")
         time_ms = event["time_ms"]
         kind = event["type"]
-        if not isinstance(time_ms, int) or time_ms < 0:
+        if not _is_plain_int(time_ms) or time_ms < 0:
             raise ValueError(f"event {i} time_ms must be a non-negative integer")
         if kind not in VALID_TYPES:
             raise ValueError(f"event {i} type must be one of {sorted(VALID_TYPES)}")

@@ -29,6 +29,8 @@ Supported event types:
 - `user_start`
 - `user_stop`
 
+`time_ms` must be a non-negative JSON integer. Boolean values such as `true` and `false` are rejected even though Python normally treats booleans as integers.
+
 A measured interruption is a `user_start` that occurs while the agent is speaking. Cancellation delay is:
 
 ```text
@@ -56,6 +58,8 @@ Compare baseline and candidate with gates:
 ```bash
 python tool.py compare examples/baseline.json examples/candidate.json --max-p95-ms 180 --max-regression-ms 0
 ```
+
+The included example candidate passes those gates because its p95 cancellation delay is 140 ms, below the 180 ms limit, and it improves on the baseline p95 of 250 ms.
 
 Exit codes:
 
